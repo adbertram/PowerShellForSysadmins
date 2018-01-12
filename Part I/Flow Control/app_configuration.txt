@@ -1,0 +1,2 @@
+<Path>C:\GoodToGo</Path>
+<Path>C:\GoodToGo2</Path>

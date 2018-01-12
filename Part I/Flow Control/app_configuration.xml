@@ -1,7 +1,0 @@
-<xml>
-	<Name>SomeApp</Name>
-	<ConfigSettings>
-		<Path>C:\SomeApp</Path>
-		<ServerName>SRV1</ServerName>
-	</ConfigSettings>
-</xml>
