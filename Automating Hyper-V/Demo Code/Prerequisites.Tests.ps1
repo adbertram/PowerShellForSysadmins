@@ -20,7 +20,7 @@ describe 'Automating Hyper-V Chapter Prerequisites' {
 		Invoke-Command -ComputerName $hyperVHostName -ScriptBlock {hostname} | should be $hyperVHostName
 	}
 
-	it 'local computer has the Hyper-V PowerShell module installed' {
-		Get-Module -Name 'Hyper-V' -ListAvailable | should not benullorEmpty
+	it 'local computer has the Hyper-V PowerShell module v1.1 installed' {
+		Get-Module -Name 'Hyper-V' -ListAvailable | Where-Object { $_.Version -eq '1.1' } | should not benullorEmpty
 	}
 }
