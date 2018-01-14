@@ -1,14 +1,10 @@
 describe 'Automating Hyper-V Chapter Demo Work' {
 
-	$sharedVmParams = @{
-		ComputerName = 'HYPERVSRV'
-	}
-
-	$createdVM = Get-Vm @sharedVmParams -Name 'SQLSRV' -ErrorAction SilentlyContinue
+	$createdVM = Get-Vm -Name 'SQLSRV' -ErrorAction SilentlyContinue
 
 	context 'Virtual Switch' {
 		it 'created a virtual switch called ExternalSwitch' {
-			Get-VmSwitch @sharedVmParams -Name 'ExternalSwitch' -ErrorAction SilentlyContinue | should not benullorEmpty
+			Get-VmSwitch -Name 'ExternalSwitch' -ErrorAction SilentlyContinue | should not benullorEmpty
 		}
 	}
 
