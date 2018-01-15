@@ -4,4 +4,8 @@ describe 'Automating Hyper-V Chapter Prerequisites' {
 		Get-WindowsFeature -Name 'Hyper-V' | should not benullorEmpty
 		$hyperVFeature.Installed | should be $true
 	}
+
+	it 'Hyper-V host server is Windows Server 2016' {
+		(Get-CimInstance -Class Win32_OperatingSystem).Caption | should be 'Microsoft Windows Server 2016'
+	}
 }
