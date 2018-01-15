@@ -7,6 +7,6 @@ describe 'Automating Hyper-V Chapter Prerequisites' {
 	}
 
 	it 'Hyper-V host server is Windows Server 2016' {
-		(Get-CimInstance -Class Win32_OperatingSystem).Caption | should belike 'Microsoft Windows Server 2016'
+		(Get-CimInstance -Class Win32_OperatingSystem).Caption | should belike 'Microsoft Windows Server 2016*'
 	}
 }
