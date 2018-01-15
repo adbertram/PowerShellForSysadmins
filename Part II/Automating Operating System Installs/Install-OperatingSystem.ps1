@@ -62,7 +62,6 @@ $convertParams = @{
 	SizeBytes         = $DiskSize
 	Edition           = $OperatingSystemEdition
 	VHDFormat         = $VhdFormat
-	VHDPath           = 
 	VHDType           = $VhdType
 	VHDPartitionStyle = 'GPT'
 	UnattendPath      = $UnattendFilePath
