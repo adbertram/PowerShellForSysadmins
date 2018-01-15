@@ -127,7 +127,7 @@
 					</Ipv6Settings>
 					<Identifier>Ethernet</Identifier>
 					<UnicastIpAddresses>
-						<IpAddress wcm:action="add" wcm:keyValue="1">192.168.0.100</IpAddress>
+						<IpAddress wcm:action="add" wcm:keyValue="1">10.0.0.100</IpAddress>
 					</UnicastIpAddresses>
 				</Interface>
 			</Interfaces>
@@ -140,7 +140,7 @@
 					<Identifier>Ethernet</Identifier>
 					<DNSDomain>powerlab.local</DNSDomain>
 					<DNSServerSearchOrder>
-						<IpAddress wcm:action="add" wcm:keyValue="1">192.168.0.100</IpAddress>
+						<IpAddress wcm:action="add" wcm:keyValue="1">10.0.0.100</IpAddress>
 					</DNSServerSearchOrder>
 					<EnableAdapterDomainNameRegistration>true</EnableAdapterDomainNameRegistration>
 					<DisableDynamicUpdate>false</DisableDynamicUpdate>
