@@ -1,3 +1,7 @@
+if ((cmdkey /list:LABDC) -match '\* NONE \*') {
+	$null = cmdkey /add:LABDC /user:PowerLabUser /pass:P@$$w0rd12
+}
+
 describe 'Automating Operating System Installs' {
 
 	context 'Virtual Disk' {
@@ -30,12 +34,18 @@ describe 'Automating Operating System Installs' {
 	}
 
 	context 'Operating System' {
+
+		it 'sets the expected IP defined in the unattend XML file' {
+			Invoke-Command -ComputerName '10.0.0.10' -ScriptBlock { hostname } | should be 'LABDC'
+		}
+
 		it 'deploys the expected Windows version' {
+			(Get-CimInstance -ComputerName LABDC).Caption | should be 'foo'
 
 		}
 
 		it 'deploys the expected Windows edition' {
-
+			(Get-CimInstance -ComputerName LABDC).Something | should be 'foo'
 		}
 	}
 }

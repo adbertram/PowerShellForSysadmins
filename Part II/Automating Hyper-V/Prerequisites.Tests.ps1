@@ -10,6 +10,10 @@ describe 'Automating Hyper-V Chapter Prerequisites' {
 		(Get-CimInstance -Class Win32_OperatingSystem).Caption | should belike 'Microsoft Windows Server 2016*'
 	}
 
+	it 'Hyper-V host server shoud have at least 100GB of available storage' {
+		(Get-CimInstance -Class Win32_LogicalDisk -Filter "DeviceId = 'C:'").FreeSpace /1GB | should begreaterthan 100
+	}
+
 	it 'has a PowerLab folder at the root of C' {
 		'C:\PowerLab' | should exist
 	}
