@@ -2,11 +2,7 @@ param
 (
 	[Parameter(Mandatory)]
 	[ValidateNotNullOrEmpty()]
-	[object]$Vm,
-	
-	[Parameter(Mandatory)]
-	[ValidateNotNullOrEmpty()]
-	[string]$OperatingSystem
+	[object]$Vm
 )
 
 $scriptPath = 'C:\Automate-The-Boring-Stuff-With-PowerShell\Part II\Automating Operating System Installs'
