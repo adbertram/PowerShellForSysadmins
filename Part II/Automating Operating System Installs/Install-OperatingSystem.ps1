@@ -64,7 +64,7 @@ $convertParams = @{
 	VHDFormat         = $VhdFormat
 	VHDType           = $VhdType
 	VHDPartitionStyle = 'GPT'
-	UnattendPath      = $UnattendFilePath
+	UnattendPath      = $answerFile.FullName
 }
 if ($PSBoundParameters.ContainsKey('VhdPath')) {
 	$convertParams.VHDPath = $VhdPath
