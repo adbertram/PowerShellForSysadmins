@@ -1,8 +1,13 @@
 describe 'Automating Operating System Install Prerequisites' {
 
-	$windowsIsoPath = 'C:\PowerLab\ISOs\en_windows_server_2016_x64_dvd_9718492.iso'
+	$isosPath = 'C:\PowerLab\ISOs'
+	$windowsIsoPath = "$isosPath\en_windows_server_2016_x64_dvd_9718492.iso"
 	$convertWimImageScriptPath = 'C:\PowerLab\Convert-WindowsImage.ps1'
-	$vmName = 'SQLSRV1'
+	$vmName = 'LABDC'
+
+	it 'has an ISOs folder created' {
+		$isosPath | should exist
+	}
 	
 	it 'has the Windows ISO available' {
 		$windowsIsoPath | should exist
