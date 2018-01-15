@@ -1,8 +1,12 @@
-if ((cmdkey /list:LABDC) -match '\* NONE \*') {
-	$null = cmdkey /add:LABDC /user:PowerLabUser /pass:P@$$w0rd12
-}
-
 describe 'Automating Operating System Installs' {
+
+	BeforeAll {
+		$session = New-PSSession -VMName 'LABDC' -Credential (Get-Credential)
+	}
+
+	AfterAll {
+		$session | Remove-PSSession
+	}
 
 	context 'Virtual Disk' {
 		
@@ -21,7 +25,7 @@ describe 'Automating Operating System Installs' {
 		}
 
 		it 'creates the expected VHDX partition style' {
-
+			(Invoke-Command -Session $session -ScriptBlock { Get-CimInstance Win32_DiskPartition -Filter "Index = '1'"}).Type | should be 'GPT: Basic Data'
 		}
 
 		it 'creates the expected VHDX type' {
@@ -36,16 +40,12 @@ describe 'Automating Operating System Installs' {
 	context 'Operating System' {
 
 		it 'sets the expected IP defined in the unattend XML file' {
-			Invoke-Command -ComputerName '10.0.0.10' -ScriptBlock { hostname } | should be 'LABDC'
+			invoke-command -Session $session -ScriptBlock { (Get-NetIPAddress -AddressFamily IPv4 | where { $_.InterfaceAlias -notmatch 'Loopback' }).IPAddress } | should be '10.0.0.100'
 		}
 
 		it 'deploys the expected Windows version' {
-			(Get-CimInstance -ComputerName LABDC).Caption | should be 'foo'
+			Invoke-Command -Session $session -ScriptBlock { (Get-CimInstance -ClassName Win32_OperatingSystem).Caption } | should belike 'Microsoft Windows Server 2016*'
 
-		}
-
-		it 'deploys the expected Windows edition' {
-			(Get-CimInstance -ComputerName LABDC).Something | should be 'foo'
 		}
 	}
 }
