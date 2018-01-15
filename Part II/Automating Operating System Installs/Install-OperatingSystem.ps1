@@ -4,11 +4,6 @@ param
 	[ValidateNotNullOrEmpty()]
 	[string]$VmName,
 
-	[Parameter(Mandatory)]
-	[ValidateNotNullOrEmpty()]
-	[ValidateScript({ Test-Path -Path $_ -PathType Leaf })]
-	[string]$UnattendFilePath,
-
 	[Parameter()]
 	[ValidateNotNullOrEmpty()]
 	[string]$OperatingSystem = 'Server 2016',
