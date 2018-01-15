@@ -1,7 +1,10 @@
 describe 'Automating Operating System Installs' {
 
 	BeforeAll {
-		$session = New-PSSession -VMName 'LABDC' -Credential (Get-Credential -UserName 'PowerLabUser')
+		## Create a PSCredential object with the same user and password that's defined in the unattend XML file
+		$secpasswd = ConvertTo-SecureString 'P@$$w0rd12' -AsPlainText -Force
+		$mycreds = New-Object System.Management.Automation.PSCredential ('PowerLabUser', $secpasswd)
+		$session = New-PSSession -VMName 'LABDC' -Credential $mycreds
 	}
 
 	AfterAll {
