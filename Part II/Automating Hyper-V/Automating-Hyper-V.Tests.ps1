@@ -1,6 +1,6 @@
 describe 'Automating Hyper-V Chapter Demo Work' {
 
-	$createdVM = Get-Vm -Name 'SQLSRV' -ErrorAction SilentlyContinue
+	$createdVM = Get-Vm -Name 'LABDC' -ErrorAction SilentlyContinue
 
 	context 'Virtual Switch' {
 		it 'created a virtual switch called PowerLab' {
@@ -9,18 +9,18 @@ describe 'Automating Hyper-V Chapter Demo Work' {
 	}
 
 	context 'Virtual Machine' {
-		it 'created a virtual machine called SQLSRV' {
+		it 'created a virtual machine called LABDC' {
 			$createdVM | should not benullorEmpty
 		}
 	}
 
 	context 'Virtual Hard Disk' {
-		it 'created a VHDX called SQLSRV at C:\PowerLab\VHDs' {
-			'C:\PowerLab\VHDs\SQLSRV.vhdx' | should exist
+		it 'created a VHDX called LABDC at C:\PowerLab\VHDs' {
+			'C:\PowerLab\VHDs\LABDC.vhdx' | should exist
 		}
 
-		it 'attached the SQLSRV VHDX to the SQLSRV VM' {
-			$createdVM | Get-VMHardDiskDrive | Where-Object { $_.Path -eq 'C:\PowerLab\VHDs\SQLSRV.vhdx' } | should not benullorEmpty
+		it 'attached the LABDC VHDX to the LABDC VM' {
+			$createdVM | Get-VMHardDiskDrive | Where-Object { $_.Path -eq 'C:\PowerLab\VHDs\LABDC.vhdx' } | should not benullorEmpty
 		}
 	}
 }

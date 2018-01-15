@@ -8,21 +8,13 @@ function Add-OperatingSystem {
 	
 		[Parameter(Mandatory)]
 		[ValidateNotNullOrEmpty()]
-		[string]$OperatingSystem,
-
-		[Parameter()]
-		[ValidateNotNullOrEmpty()]
-		[string]$VmType,
-
-		[Parameter()]
-		[ValidateNotNullOrEmpty()]
-		[switch]$DomainJoined
+		[string]$OperatingSystem
 	)
 
 	$ErrorActionPreference = 'Stop'
 
 	try {
-		$templateAnswerFilePath = Get-Item -Path "\\HYPERVSRV\c$\PowerLab\$OperatingSystem.xml"
+		$templateAnswerFilePath = Get-Item -Path "C:\PowerLab\$OperatingSystem.xml"
 		if ($OperatingSystem -eq 'Windows Server 2016') {
 			$isoConfig = @{
 				FileName   = 'en_windows_server_2016_x64_dvd_9718492.iso'
@@ -45,14 +37,7 @@ function Add-OperatingSystem {
 			UserPassword = 'P@$$w0rd12'
 			DomainName   = 'powerlab.local'
 		}
-		if ($PSBoundParameters.ContainsKey('VmType')) {
-			$prepParams.VmType = $VmType
-		}
 		$answerFile = Prepare-UnattendXmlFile @prepParams
-
-		if (-not ($vhd = New-LabVhd -OperatingSystem $OperatingSystem -AnswerFilePath $answerFile.FullName -Name $vm.Name -PassThru)) {
-			throw 'VHD creation failed'
-		}
 
 		$invParams = @{
 			Scriptblock  = {
