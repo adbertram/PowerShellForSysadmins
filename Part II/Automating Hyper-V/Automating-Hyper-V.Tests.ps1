@@ -3,8 +3,8 @@ describe 'Automating Hyper-V Chapter Demo Work' {
 	$createdVM = Get-Vm -Name 'SQLSRV' -ErrorAction SilentlyContinue
 
 	context 'Virtual Switch' {
-		it 'created a virtual switch called ExternalSwitch' {
-			Get-VmSwitch -Name 'ExternalSwitch' -ErrorAction SilentlyContinue | should not benullorEmpty
+		it 'created a virtual switch called PowerLab' {
+			Get-VmSwitch -Name 'PowerLab' -ErrorAction SilentlyContinue | should not benullorEmpty
 		}
 	}
 
@@ -16,7 +16,7 @@ describe 'Automating Hyper-V Chapter Demo Work' {
 
 	context 'Virtual Hard Disk' {
 		it 'created a VHDX called SQLSRV at C:\PowerLab\VHDs' {
-			"\\$($sharedVmParams.ComputerName)\C$\PowerLab\VHDs\SQLSRV.vhdx" | should exist
+			'C:\PowerLab\VHDs\SQLSRV.vhdx' | should exist
 		}
 
 		it 'attached the SQLSRV VHDX to the SQLSRV VM' {
