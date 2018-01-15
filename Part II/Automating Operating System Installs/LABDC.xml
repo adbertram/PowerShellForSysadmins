@@ -187,7 +187,7 @@
 				<LocalAccounts>
 					<LocalAccount wcm:action="add">
 						<Password>
-							<Value></Value>
+							<Value>P@$$w0rd12</Value>
 							<PlainText>true</PlainText>
 						</Password>
 						<Description>Local Administrator</Description>
@@ -197,12 +197,12 @@
 					</LocalAccount>
 					<LocalAccount wcm:action="add">
 						<Password>
-							<Value>XXXX</Value>
+							<Value>P@$$w0rd12</Value>
 							<PlainText>true</PlainText>
 						</Password>
 						<DisplayName></DisplayName>
 						<Group>Administrators</Group>
-						<Name>XXXX</Name>
+						<Name>PowerlabUser</Name>
 					</LocalAccount>
 				</LocalAccounts>
 			</UserAccounts>
