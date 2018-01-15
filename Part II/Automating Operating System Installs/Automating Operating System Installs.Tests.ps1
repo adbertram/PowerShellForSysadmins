@@ -1,7 +1,7 @@
 describe 'Automating Operating System Installs' {
 
 	BeforeAll {
-		$session = New-PSSession -VMName 'LABDC' -Credential (Get-Credential)
+		$session = New-PSSession -VMName 'LABDC' -Credential (Get-Credential -UserName 'PowerLabUser')
 	}
 
 	AfterAll {
@@ -29,7 +29,7 @@ describe 'Automating Operating System Installs' {
 		}
 
 		it 'creates the expected VHDX type' {
-			(Get-VHD -Path $expectedVhdPath).Type | should be 'Dynamic'
+			(Get-VHD -Path $expectedVhdPath).VhdType | should be 'Dynamic'
 		}
 
 		it 'creates the VHDDX of the expected size' {
