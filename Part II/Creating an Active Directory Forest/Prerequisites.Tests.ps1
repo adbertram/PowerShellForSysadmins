@@ -6,4 +6,8 @@ describe 'Automating Operating System Install Prerequisites' {
 		Get-Vm -Name $vmName | should not benullorEmpty
 	}
 
+	it 'the existing VM must be running' {
+		(Get-VM -Name $vmName).State | should be 'Running'
+	}
+
 }
