@@ -13,11 +13,9 @@ $scriptBlock = {
 	foreach ($group in $using:groups) {
 		if (-not (Get-AdOrganizationalUnit -Filter "Name -eq '$($group.OUName)'")) {
 			New-AdOrganizationalUnit -Name $group.OUName
-			Write-Host $group.OUName
 		}
 		if (-not (Get-AdGroup -Filter "Name -eq '$($group.GroupName)'")) {
 			New-AdGroup -Name $group.GroupName -GroupScope $group.Type -Path "OU=$($group.OUName),DC=powerlab,DC=local"
-			write-host $group.GroupName
 		}
 	}
 
@@ -29,7 +27,7 @@ $scriptBlock = {
 			New-AdUser -Name $user.UserName -Path "OU=$($user.OUName),DC=powerlab,DC=local"
 		}
 		if ($user.UserName -notin (Get-AdGroupMember -Identity $user.MemberOf).Name) {
-			Add-AdGroupMember -Identity $group.MemberOf -Members $user.UserName
+			Add-AdGroupMember -Identity $user.MemberOf -Members $user.UserName
 		}
 	}
 }
