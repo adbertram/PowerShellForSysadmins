@@ -17,43 +17,54 @@ describe 'Creating an Active Directory Forest' {
 		$domain = Invoke-Command -Session $session -ScriptBlock { Get-AdDomain }
 		$forest = Invoke-Command -Session $session -ScriptBlock { Get-AdForest }
 
-		it "the domain mode should be WinThreshold" {
-			$domain.DomainMode | should be 'WinThreshold'
+		it "the domain mode should be Windows2016Domain" {
+			$domain.DomainMode | should be 'Windows2016Domain'
 		}
 
 		it "the forest mode should be WinThreshold" {
-			$forest.DomainMode | should be 'WinThreshold'
+			$forest.ForestMode | should be 'Windows2016Forest'
 		}
 
 		it "the domain name should be powerlab.local" {
-			$domain.Name | should be 'powerlab.local'
+			$domain.Name | should be 'powerlab'
 		}
 	}
 
 	context 'Organizational Units' {
 
 		$allOus = ($expectedUsers.OUName + $expectedGroups.OUName) | Select-Object -Unique
-		$allOus | ForEach-Object {
-			Invoke-Command -Session $session -ScriptBlock { Get-AdOrganizationalUnit -Filter "Name -eq '$_'" } | should not benullorempty
+		foreach ($ou in $allOus) {
+			it "the OU [$ou] should exist" {
+				Invoke-Command -Session $session -ScriptBlock { Get-AdOrganizationalUnit -Filter "Name -eq '$using:ou'" } | should not benullorempty
+			}
 		}
 	}
 
 	context 'Users' {
-		$expectedUsers | ForEach-Object {
-			$actualUser = Invoke-Command -Session $session -ScriptBlock { Get-AdUser -Filter "Name -eq '$_'" }
-			$actualUser | should not benullorempty
-			$actualUser.Name | should be $_.Name
-			$actualUser.Path | should be "OU=$($_.OUName),DC=powerlab,DC=local"
-			(Get-AdGroupMember -Identity $_.MemberOf).Name | should contain $_.Name
+		foreach ($user in $expectedUsers) {
+			$actualUser = Invoke-Command -Session $session -ScriptBlock { Get-AdUser -Filter "Name -eq '$($using:user.UserName)'" }
+			it "the user [$($user.UserName)] should exist" {
+				$actualUser | should not benullorempty
+			}
+			it "the user [$($user.UserName)] should be in the [$($user.OUName)] OU" {
+				($actualUser.DistinguishedName -replace "CN=$($user.UserName),") | should be "OU=$($user.OUName),DC=powerlab,DC=local"
+			}
+			it "the user [$($user.UserName)] should be in the [$($user.MemberOf)] group" {
+				$groupMembers = Invoke-Command -Session $session -ScriptBlock { (Get-AdGroupMember -Identity $using:user.MemberOf).Name }
+				$groupMembers -eq $user.UserName | should not benullorempty
+			}
 		}
 	}
 
 	context 'Groups' {
-		$expectedGroups | ForEach-Object {
-			$actualGroup = Invoke-Command -Session $session -ScriptBlock { Get-AdGroup -Filter "Name -eq '$_'" }
-			$actualGroup | should not benullorempty
-			$actualGroup.Name | should be $_.Name
-			$actualGroup.Path | should be "OU=$($_.OUName),DC=powerlab,DC=local"
+		foreach ($group in $expectedGroups) {
+			$actualGroup = Invoke-Command -Session $session -ScriptBlock { Get-AdGroup -Filter "Name -eq '$($using:group.GroupName)'" }
+			it "the group [$($group.GroupName)] should exist" {
+				$actualGroup | should not benullorempty
+			}
+			it "the group [$($group.GroupName)] should be in the [$($group.OUName)] OU" {
+				($actualGroup.DistinguishedName -replace "CN=$($group.GroupName),") | should be "OU=$($group.OUName),DC=powerlab,DC=local"
+			}
 		}
 	}
 }
