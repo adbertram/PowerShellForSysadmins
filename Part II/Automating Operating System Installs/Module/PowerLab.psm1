@@ -168,7 +168,9 @@ function Install-PowerLabOperatingSystem {
 	Convert-WindowsImage @convertParams
 
 	$vm = Get-Vm -Name $VmName
-	$vm | Add-VMHardDiskDrive -Path $convertParams.VHDPath
+	if (($vm | Get-VMHardDiskDrive).Path -ne $convertParams.VHDPath) {
+		$vm | Add-VMHardDiskDrive -Path $convertParams.VHDPath
+	}	
 	$bootOrder = ($vm | Get-VMFirmware).Bootorder
 	if ($bootOrder[0].BootType -ne 'Drive') {
 		$vm | Set-VMFirmware -FirstBootDevice $vm.HardDrives[0]

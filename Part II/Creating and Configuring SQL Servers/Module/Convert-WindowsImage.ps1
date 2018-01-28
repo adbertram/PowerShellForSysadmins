@@ -4237,6 +4237,7 @@ format fs=fat32 label="System"
 
                     if (![string]::IsNullOrEmpty($UnattendPath)) {
                         Write-W2VInfo "Applying unattend file ($(Split-Path $UnattendPath -Leaf))..."
+                        $null = Get-PSDrive
                         Copy-Item -Path $UnattendPath -Destination (Join-Path $drive "unattend.xml") -Force
                     }
 

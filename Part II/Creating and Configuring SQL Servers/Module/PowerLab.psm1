@@ -168,7 +168,9 @@ function Install-PowerLabOperatingSystem {
 	Convert-WindowsImage @convertParams
 
 	$vm = Get-Vm -Name $VmName
-	$vm | Add-VMHardDiskDrive -Path $convertParams.VHDPath
+	if (($vm | Get-VMHardDiskDrive).Path -ne $convertParams.VHDPath) {
+		$vm | Add-VMHardDiskDrive -Path $convertParams.VHDPath
+	}	
 	$bootOrder = ($vm | Get-VMFirmware).Bootorder
 	if ($bootOrder[0].BootType -ne 'Drive') {
 		$vm | Set-VMFirmware -FirstBootDevice $vm.HardDrives[0]
@@ -268,7 +270,15 @@ function New-PowerLabSqlServer {
 	param
 	(
 		[Parameter(Mandatory)]
-		[hashtable]$NewVMParameters,
+		[hashtable]$Name,
+
+		[Parameter()]
+		[ValidateNotNullOrEmpty()]
+		[hashtable]$VMAttributes,
+
+		[Parameter()]
+		[ValidateNotNullOrEmpty()]
+		[hashtable]$VHDAttributes,
 
 		[Parameter(Mandatory, ParameterSetName = 'AddToDomain')]
 		[switch]$AddToDomain,
@@ -281,20 +291,26 @@ function New-PowerLabSqlServer {
 	)
 
 	## Build the VM
-	$vmparams = @{ 
-		Name       = $NewVMParameters.Name
-		Path       = $NewVMParameters.Path
-		Memory     = $NewVMParameters.Memory
-		Switch     = $NewVMParameters.SwitchName
-		Generation = $NewVMParameters.Generation
+	$vmParams = @{
+		Name = $Name
+	}
+	if ($PSBoundParameters.ContainsKey('VMAttributes')) {
+		$vmParams += $VMAttributes
 	}
 	New-PowerLabVm @vmParams
-	New-PowerLabVhd -Name $NewVMParameters.Name -Size 100GB
-	Install-PowerLabSqlServer -ComputerName $NewVMParameters.Name
+
+	$vhdParams = @{
+		Name = $Name
+	}
+	if ($PSBoundParameters.ContainsKey('VHDAttributes')) {
+		$vhdParams += $VHDAttributes
+	}
+	New-PowerLabVhd @vhdParams
+	Install-PowerLabSqlServer -ComputerName $Name
 
 	if ($AddToDomain.IsPresent) {
 		$addParams = @{
-			ComputerName = $NewVMParameters.Name
+			ComputerName = $Name
 			DomainName   = $DomainName
 			Credential   = $DomainCredential
 			Restart      = $true
