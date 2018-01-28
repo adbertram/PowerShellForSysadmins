@@ -1,10 +1,10 @@
 function New-PowerLabSwitch {
 	param(
-		[Parameter(Mandatory)]
-		[string]$SwitchName,
+		[Parameter()]
+		[string]$SwitchName = 'PowerLab',
 
-		[Parameter(Mandatory)]
-		[string]$SwitchType
+		[Parameter()]
+		[string]$SwitchType = 'External'
 	)
 
 	if (-not (Get-VmSwitch -Name $SwitchName -SwitchType $SwitchType -ErrorAction SilentlyContinue)) {
@@ -15,28 +15,34 @@ function New-PowerLabSwitch {
 }
 
 function New-PowerLabVm {
-	param (
+	param(
 		[Parameter(Mandatory)]
 		[string]$Name,
 
-		[Parameter(Mandatory)]
-		[string]$Path,
+		[Parameter()]
+		[string]$Path = 'C:\PowerLab\VMs',
 
-		[Parameter(Mandatory)]
-		[string]$Memory,
+		[Parameter()]
+		[string]$Memory = 4GB,
 
-		[Parameter(Mandatory)]
-		[string]$Switch,
+		[Parameter()]
+		[string]$Switch = 'PowerLab',
 
-		[Parameter(Mandatory)]
+		[Parameter()]
 		[ValidateRange(1, 2)]
-		[int]$Generation
+		[int]$Generation = 2,
+
+		[Parameter()]
+		[switch]$PassThru
 	)
 
 	if (-not (Get-Vm -Name $Name -ErrorAction SilentlyContinue)) {
 		$null = New-VM -Name $Name -Path $Path -MemoryStartupBytes $Memory -Switch $Switch -Generation $Generation
 	} else {
 		Write-Verbose -Message "The VM [$($Name)] has already been created."
+	}
+	if ($PassThru.IsPresent) {
+		Get-VM -Name $Name
 	}
 }
 
@@ -47,18 +53,18 @@ function New-PowerLabVhd {
 		[string]$Name,
 
 		[Parameter(Mandatory)]
+		[string]$AttachToVm,
+
+		[Parameter()]
 		[ValidateRange(512MB, 1TB)]
-		[int64]$Size,
+		[int64]$Size = 50GB,
 
-		[Parameter(Mandatory)]
+		[Parameter()]
 		[ValidateSet('Dynamic', 'Fixed')]
-		[string]$Sizing,
+		[string]$Sizing = 'Dynamic',
 
-		[Parameter(Mandatory)]
-		[string]$Path,
-
-		[Parameter(Mandatory)]
-		[string]$AttachToVm
+		[Parameter()]
+		[string]$Path = 'C:\PowerLab\VHDs'
 	)
 
 	$vhdxFileName = "$Name.vhdx"
@@ -97,36 +103,28 @@ function Install-PowerLabOperatingSystem {
 	param
 	(
 		[Parameter(Mandatory)]
-		[ValidateNotNullOrEmpty()]
 		[string]$VmName,
 
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
 		[string]$OperatingSystem = 'Server 2016',
 
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
 		[ValidateSet('ServerStandardCore')]
 		[string]$OperatingSystemEdition = 'ServerStandardCore',
 
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
 		[string]$DiskSize = 40GB,
 
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
 		[string]$VhdFormat = 'VHDX',
 
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
 		[string]$VhdType = 'Dynamic',
 
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
 		[string]$VhdPartitionStyle = 'GPT',
 
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
 		[string]$VhdPath
 	)
 	

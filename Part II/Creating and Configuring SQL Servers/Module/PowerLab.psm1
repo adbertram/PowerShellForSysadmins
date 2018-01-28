@@ -1,10 +1,10 @@
 function New-PowerLabSwitch {
 	param(
-		[Parameter(Mandatory)]
-		[string]$SwitchName,
+		[Parameter()]
+		[string]$SwitchName = 'PowerLab',
 
-		[Parameter(Mandatory)]
-		[string]$SwitchType
+		[Parameter()]
+		[string]$SwitchType = 'External'
 	)
 
 	if (-not (Get-VmSwitch -Name $SwitchName -SwitchType $SwitchType -ErrorAction SilentlyContinue)) {
@@ -19,18 +19,18 @@ function New-PowerLabVm {
 		[Parameter(Mandatory)]
 		[string]$Name,
 
-		[Parameter(Mandatory)]
-		[string]$Path,
+		[Parameter()]
+		[string]$Path = 'C:\PowerLab\VMs',
 
-		[Parameter(Mandatory)]
-		[string]$Memory,
+		[Parameter()]
+		[string]$Memory = 4GB,
 
-		[Parameter(Mandatory)]
-		[string]$Switch,
+		[Parameter()]
+		[string]$Switch = 'PowerLab',
 
-		[Parameter(Mandatory)]
+		[Parameter()]
 		[ValidateRange(1, 2)]
-		[int]$Generation,
+		[int]$Generation = 2,
 
 		[Parameter()]
 		[switch]$PassThru
@@ -53,18 +53,18 @@ function New-PowerLabVhd {
 		[string]$Name,
 
 		[Parameter(Mandatory)]
+		[string]$AttachToVm,
+
+		[Parameter()]
 		[ValidateRange(512MB, 1TB)]
-		[int64]$Size,
+		[int64]$Size = 50GB,
 
-		[Parameter(Mandatory)]
+		[Parameter()]
 		[ValidateSet('Dynamic', 'Fixed')]
-		[string]$Sizing,
+		[string]$Sizing = 'Dynamic',
 
-		[Parameter(Mandatory)]
-		[string]$Path,
-
-		[Parameter(Mandatory)]
-		[string]$AttachToVm
+		[Parameter()]
+		[string]$Path = 'C:\PowerLab\VHDs'
 	)
 
 	$vhdxFileName = "$Name.vhdx"
@@ -125,6 +125,12 @@ function Install-PowerLabOperatingSystem {
 		[string]$VhdPartitionStyle = 'GPT',
 
 		[Parameter()]
+		[string]$VhdBaseFolderPath = 'C:\PowerLab\VHDs',
+
+		[Parameter()]
+		[string]$IsoBaseFolderPath = 'C:\PowerLab\ISOs',
+
+		[Parameter()]
 		[string]$VhdPath
 	)
 	
@@ -135,18 +141,14 @@ function Install-PowerLabOperatingSystem {
 	. "$PSScriptRoot\Convert-WindowsImage.ps1"
 
 	## Here is where we could add mulitple OS support picking the right ISO depending on the OS version chosen
-	$baseIsoPath = 'C:\PowerLab\ISOs'
 	switch ($OperatingSystem) {
 		'Server 2016' {
-			$isoFilePath = "$baseIsoPath\en_windows_server_2016_x64_dvd_9718492.iso"
+			$isoFilePath = "$IsoBaseFolderPath\en_windows_server_2016_x64_dvd_9718492.iso"
 		}
 		default {
 			throw "Unrecognized input: [$_]"
 		}
 	}
-
-	## Assuming all VHDs live here and are called <VMName>.vhdx
-	$vhdBasePath = 'C:\PowerLab\VHDs'
 
 	$convertParams = @{
 		SourcePath        = $isoFilePath
@@ -160,7 +162,7 @@ function Install-PowerLabOperatingSystem {
 	if ($PSBoundParameters.ContainsKey('VhdPath')) {
 		$convertParams.VHDPath = $VhdPath
 	} else {
-		$convertParams.VHDPath = "$vhdBasePath\$VMName.vhdx"
+		$convertParams.VHDPath = "$VhdBaseFolderPath\$VMName.vhdx"
 	}
 
 	Convert-WindowsImage @convertParams
@@ -220,11 +222,11 @@ function New-PowerLabActiveDirectoryForest {
 		[Parameter(Mandatory)]
 		[string]$SafeModePassword,
 
-		[Parameter(Mandatory)]
-		[string]$VMName,
+		[Parameter()]
+		[string]$VMName = 'LABDC',
 
-		[Parameter(Mandatory)]
-		[string]$DomainName,
+		[Parameter()]
+		[string]$DomainName = 'powerlab.local',
 
 		[Parameter()]
 		[string]$DomainMode = 'WinThreshold',
@@ -254,11 +256,11 @@ function Test-PowerLabActiveDirectoryForest {
 		[Parameter(Mandatory)]
 		[pscredential]$Credential,
 
-		[Parameter(Mandatory)]
-		[string]$VMName
+		[Parameter()]
+		[string]$VMName = 'LABDC'
 	)
 
-	Invoke-Command -VMName $VMName -Credential $Credential -ScriptBlock { Get-AdUser -Filter * }
+	Invoke-Command -Credential $Credential -ScriptBlock { Get-AdUser -Filter * }
 }
 
 function New-PowerLabSqlServer {
@@ -271,8 +273,8 @@ function New-PowerLabSqlServer {
 		[Parameter(Mandatory, ParameterSetName = 'AddToDomain')]
 		[switch]$AddToDomain,
 
-		[Parameter(Mandatory, ParameterSetName = 'AddToDomain')]
-		[string]$DomainName,
+		[Parameter(ParameterSetName = 'AddToDomain')]
+		[string]$DomainName = 'powerlab.local',
 
 		[Parameter(Mandatory, ParameterSetName = 'AddToDomain')]
 		[pscredential]$DomainCredential

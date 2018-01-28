@@ -1,10 +1,10 @@
 function New-PowerLabSwitch {
 	param(
-		[Parameter(Mandatory)]
-		[string]$SwitchName,
+		[Parameter()]
+		[string]$SwitchName = 'PowerLab',
 
-		[Parameter(Mandatory)]
-		[string]$SwitchType
+		[Parameter()]
+		[string]$SwitchType = 'External'
 	)
 
 	if (-not (Get-VmSwitch -Name $SwitchName -SwitchType $SwitchType -ErrorAction SilentlyContinue)) {
@@ -19,21 +19,20 @@ function New-PowerLabVm {
 		[Parameter(Mandatory)]
 		[string]$Name,
 
-		[Parameter(Mandatory)]
-		[string]$Path,
-
-		[Parameter(Mandatory)]
-		[string]$Memory,
-
-		[Parameter(Mandatory)]
-		[string]$Switch,
-
-		[Parameter(Mandatory)]
-		[ValidateRange(1, 2)]
-		[int]$Generation,
+		[Parameter()]
+		[string]$Path = 'C:\PowerLab\VMs',
 
 		[Parameter()]
-		[ValidateNotNullOrEmpty()]
+		[string]$Memory = 4GB,
+
+		[Parameter()]
+		[string]$Switch = 'PowerLab',
+
+		[Parameter()]
+		[ValidateRange(1, 2)]
+		[int]$Generation = 2,
+
+		[Parameter()]
 		[switch]$PassThru
 	)
 
@@ -54,18 +53,18 @@ function New-PowerLabVhd {
 		[string]$Name,
 
 		[Parameter(Mandatory)]
+		[string]$AttachToVm,
+
+		[Parameter()]
 		[ValidateRange(512MB, 1TB)]
-		[int64]$Size,
+		[int64]$Size = 50GB,
 
-		[Parameter(Mandatory)]
+		[Parameter()]
 		[ValidateSet('Dynamic', 'Fixed')]
-		[string]$Sizing,
+		[string]$Sizing = 'Dynamic',
 
-		[Parameter(Mandatory)]
-		[string]$Path,
-
-		[Parameter(Mandatory)]
-		[string]$AttachToVm
+		[Parameter()]
+		[string]$Path = 'C:\PowerLab\VHDs'
 	)
 
 	$vhdxFileName = "$Name.vhdx"
