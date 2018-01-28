@@ -175,7 +175,6 @@ function Install-PowerLabOperatingSystem {
 	if ($bootOrder[0].BootType -ne 'Drive') {
 		$vm | Set-VMFirmware -FirstBootDevice $vm.HardDrives[0]
 	}
-	$vm | Start-VM
 }
 
 function New-PowerLabActiveDirectoryTestObject {
@@ -277,10 +276,6 @@ function New-PowerLabSqlServer {
 		[ValidateNotNullOrEmpty()]
 		[hashtable]$VMAttributes,
 
-		[Parameter()]
-		[ValidateNotNullOrEmpty()]
-		[hashtable]$VHDAttributes,
-
 		[Parameter(Mandatory, ParameterSetName = 'AddToDomain')]
 		[switch]$AddToDomain,
 
@@ -303,10 +298,6 @@ function New-PowerLabSqlServer {
 	$vhdParams = @{
 		Name = $Name
 	}
-	if ($PSBoundParameters.ContainsKey('VHDAttributes')) {
-		$vhdParams += $VHDAttributes
-	}
-	New-PowerLabVhd @vhdParams
 	Install-PowerLabSqlServer -ComputerName $Name
 
 	if ($AddToDomain.IsPresent) {
@@ -341,7 +332,7 @@ function Install-PowerLabSqlServer {
 		$session = New-PSSession -VMName $ComputerName -Credential $DomainCredential
 
 		## Test to see if SQL Server is already installed
-		if (Invoke-Command -Session $session -ScriptBlock { Get-Service -Name 'MSSQLSERVER' }) {
+		if (Invoke-Command -Session $session -ScriptBlock { Get-Service -Name 'MSSQLSERVER' -ErrorAction Ignore }) {
 			Write-Verbose -Message 'SQL Server is already installed'
 		} else {
 

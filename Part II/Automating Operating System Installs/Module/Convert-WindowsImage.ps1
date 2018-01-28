@@ -3404,6 +3404,7 @@ namespace WIM2VHD {
 
 							# Check to see if there's a WIM file we can muck about with.
 							Write-W2VInfo "Looking for $($SourcePath)..."
+							$null = Get-PSDrive
 							if (!(Test-Path $SourcePath)) {
 								throw "The specified ISO does not appear to be valid Windows installation media."
 							}
