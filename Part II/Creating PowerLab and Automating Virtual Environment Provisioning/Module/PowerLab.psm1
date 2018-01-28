@@ -15,7 +15,7 @@ function New-PowerLabSwitch {
 }
 
 function New-PowerLabVm {
-	param (
+	param(
 		[Parameter(Mandatory)]
 		[string]$Name,
 
@@ -30,13 +30,20 @@ function New-PowerLabVm {
 
 		[Parameter(Mandatory)]
 		[ValidateRange(1, 2)]
-		[int]$Generation
+		[int]$Generation,
+
+		[Parameter()]
+		[ValidateNotNullOrEmpty()]
+		[switch]$PassThru
 	)
 
 	if (-not (Get-Vm -Name $Name -ErrorAction SilentlyContinue)) {
 		$null = New-VM -Name $Name -Path $Path -MemoryStartupBytes $Memory -Switch $Switch -Generation $Generation
 	} else {
 		Write-Verbose -Message "The VM [$($Name)] has already been created."
+	}
+	if ($PassThru.IsPresent) {
+		Get-VM -Name $Name
 	}
 }
 
@@ -64,16 +71,11 @@ function New-PowerLabVhd {
 	$vhdxFileName = "$Name.vhdx"
 	$vhdxFilePath = Join-Path -Path $Path -ChildPath "$Name.vhdx"
 
-	### Convert the Hyper-V host local path to a UNC
-	$remoteFilePathDrive = ($Path | Split-Path -Qualifier).TrimEnd(':')
-	$uncPath = '\\{0}\{1}${2}\{3}' -f $ComputerName, $remoteFilePathDrive, ($Path | Split-Path -NoQualifier), $vhdxFileName
-
 	### Ensure we don't try to create a VHD when there's already one there
-	if (-not (Test-Path -Path $uncPath -PathType Leaf)) {
+	if (-not (Test-Path -Path $vhdxFilePath -PathType Leaf)) {
 		$params = @{
-			SizeBytes    = $Size
-			ComputerName = $ComputerName
-			Path         = $vhdxFilePath
+			SizeBytes = $Size
+			Path      = $vhdxFilePath
 		}
 		if ($Sizing -eq 'Dynamic') {
 			$params.Dynamic = $true
@@ -87,7 +89,7 @@ function New-PowerLabVhd {
 
 	### Attach either the newly created VHD or the one that was already there to the VM.
 	if ($PSBoundParameters.ContainsKey('AttachToVm')) {
-		if (-not ($vm = Get-VM -Name $AttachToVm -ComputerName $ComputerName -ErrorAction SilentlyContinue)) {
+		if (-not ($vm = Get-VM -Name $AttachToVm -ErrorAction SilentlyContinue)) {
 			Write-Warning -Message "The VM [$($AttachToVm)] does not exist. Unable to attach VHD."
 		} elseif (-not ($vm | Get-VMHardDiskDrive | Where-Object { $_.Path -eq $vhdxFilePath })) {
 			$vm | Add-VMHardDiskDrive -Path $vhdxFilePath
