@@ -26,4 +26,12 @@ describe 'Creating and Configuring SQL Servers Prerequisites' {
 	it 'the PowerLab module must be installed' {
 		'C:\Program Files\WindowsPowerShell\Modules\PowerLab\PowerLab.psm1' | should exist
 	}
+
+	it 'the SQLServer.ini answer file template must exist' {
+		'C:\Program Files\WindowsPowerShell\Modules\PowerLab\SQLServer.ini' | should exist
+	}
+
+	it 'the SQL server 2016 ISO file must exist' {
+		'C:\PowerLab\ISOs\en_sql_server_2016_standard_x64_dvd_8701871.iso' | should exist
+	}
 }

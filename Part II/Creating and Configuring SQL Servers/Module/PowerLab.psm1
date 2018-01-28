@@ -289,6 +289,7 @@ function New-PowerLabSqlServer {
 		Generation = $NewVMParameters.Generation
 	}
 	New-PowerLabVm @vmParams
+	New-PowerLabVhd -Name $NewVMParameters.Name -Size 100GB
 	Install-PowerLabSqlServer -ComputerName $NewVMParameters.Name
 
 	if ($AddToDomain.IsPresent) {
@@ -322,53 +323,59 @@ function Install-PowerLabSqlServer {
 		Write-Verbose -Message "Creating a new PSSession to [$($ComputerName)]..."
 		$session = New-PSSession -VMName $ComputerName -Credential $DomainCredential
 
-		$sqlServerAnswerFilePath = "$PSScriptRoot\SqlServer.ini"
+		## Test to see if SQL Server is already installed
+		if (Invoke-Command -Session $session -ScriptBlock { Get-Service -Name 'MSSQLSERVER' }) {
+			Write-Verbose -Message 'SQL Server is already installed'
+		} else {
 
-		## Make a temporary copy of the template
-		Write-Verbose -Message 'Creating temporary SQL Server answer file...'
-		$tempFile = Copy-Item -Path $sqlServerAnswerFilePath -Destination "$PSScriptRoot\temp.ini" -PassThru
-		
-		## Set all of your specific values in the temp answer file
-		$sqlServerAnswerFileContents = PrepareSqlServerInstallConfigFile -Path $tempFile.FullName
-		Set-Content -Path $tempFile.FullName -Value $sqlServerAnswerFileContents
+			$sqlServerAnswerFilePath = "$PSScriptRoot\SqlServer.ini"
 
-		## Copy the SQL server config ini to the VM
-		Write-Verbose -Message 'Copying SQL server answer file to VM...'
-		$copyParams = @{
-			Path        = $tempFile.FullName
-			Destination = 'C:\'
-			VMName      = $ComputerName
-			PassThru    = $true
-		}
-		$copiedConfigFile = Copy-Item @copyParams
+			## Make a temporary copy of the template
+			Write-Verbose -Message 'Creating temporary SQL Server answer file...'
+			$tempFile = Copy-Item -Path $sqlServerAnswerFilePath -Destination "$PSScriptRoot\temp.ini" -PassThru -ToSession $session
 		
-		## Remove the temp file
-		Remove-Item -Path $tempFile.FullName -ErrorAction Ignore
-	
-		## Copy the ISO to the VM
-		Write-Verbose -Message 'Copying SQL server ISO to VM...'
-		$copiedIso = Copy-Item -Path $IsoFilePath -Destination 'C:\' -Force -ToSession $session -PassThru
-	
-		## Execute the installer
-		Write-Verbose -Message 'Running SQL Server installer...'
-		$icmParams = @{
-			VMName       = $ComputerName
-			ArgumentList = $copiedConfigFile.FullName, $copiedIso.FullName
-			ScriptBlock  = {
-				$image = Mount-DiskImage -ImagePath $args[1] -PassThru
-				$installerPath = "$(($image | Get-Volume).DriveLetter):"
-				$null = & "$installerPath\setup.exe" "/CONFIGURATIONFILE=$($args[0])"
-				$image | Dismount-DiskImage
+			## Set all of your specific values in the temp answer file
+			$sqlServerAnswerFileContents = PrepareSqlServerInstallConfigFile -Path $tempFile.FullName
+			Set-Content -Path $tempFile.FullName -Value $sqlServerAnswerFileContents
+
+			## Copy the SQL server config ini to the VM
+			Write-Verbose -Message 'Copying SQL server answer file to VM...'
+			$copyParams = @{
+				Path        = $tempFile.FullName
+				Destination = 'C:\'
+				Session     = $session
+				PassThru    = $true
 			}
+			$copiedConfigFile = Copy-Item @copyParams
+		
+			## Remove the temp file
+			Remove-Item -Path $tempFile.FullName -ErrorAction Ignore
+	
+			## Copy the ISO to the VM
+			Write-Verbose -Message 'Copying SQL server ISO to VM...'
+			$copiedIso = Copy-Item -Path $IsoFilePath -Destination 'C:\' -Force -ToSession $session -PassThru
+	
+			## Execute the installer
+			Write-Verbose -Message 'Running SQL Server installer...'
+			$icmParams = @{
+				Session      = $session
+				ArgumentList = $copiedConfigFile.FullName, $copiedIso.FullName
+				ScriptBlock  = {
+					$image = Mount-DiskImage -ImagePath $args[1] -PassThru
+					$installerPath = "$(($image | Get-Volume).DriveLetter):"
+					$null = & "$installerPath\setup.exe" "/CONFIGURATIONFILE=$($args[0])"
+					$image | Dismount-DiskImage
+				}
+			}
+			Invoke-Command @icmParams
+
+			Write-Verbose -Message 'Cleaning up installer remnants...'
+			$scriptBlock = { Remove-Item -Path $copiedIso.FullName $using:copiedConfigFile.FullName -Recurse -ErrorAction Ignore }
+			Invoke-Command -ScriptBlock $scriptBlock -Session $session
 		}
-		Invoke-Command @icmParams
+		$session | Remove-PSSession
 	} catch {
 		$PSCmdlet.ThrowTerminatingError($_)
-	} finally {
-		Write-Verbose -Message 'Cleaning up installer remnants...'
-		$scriptBlock = { Remove-Item -Path $copiedIso.FullName $using:copiedConfigFile.FullName -Recurse -ErrorAction Ignore }
-		Invoke-Command -VMName $ComputerName -ScriptBlock $scriptBlock -Session $session
-		$session | Remove-PSSession
 	}
 }
 
@@ -386,7 +393,7 @@ function PrepareSqlServerInstallConfigFile {
 		[string]$ServiceAccountPassword = 'P@$$w0rd12',
 
 		[Parameter()]
-		[string]$SysAdminAcountName = 'P@$$w0rd12'
+		[string]$SysAdminAcountName = 'PowerLabUser'
 	)
 
 	$configContents = Get-Content -Path $Path -Raw

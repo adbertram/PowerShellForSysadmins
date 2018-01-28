@@ -4233,6 +4233,7 @@ format fs=fat32 label="System"
                     Write-W2VInfo "Applying image to $VHDFormat. This could take a while..."
 
                     $openImage.Apply($drive)
+                    Start-Sleep -Seconds 10
 
                     if (![string]::IsNullOrEmpty($UnattendPath)) {
                         Write-W2VInfo "Applying unattend file ($(Split-Path $UnattendPath -Leaf))..."
