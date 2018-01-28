@@ -175,4 +175,5 @@ function Install-PowerLabOperatingSystem {
 	if ($bootOrder[0].BootType -ne 'Drive') {
 		$vm | Set-VMFirmware -FirstBootDevice $vm.HardDrives[0]
 	}
+	$vm | Start-VM
 }
