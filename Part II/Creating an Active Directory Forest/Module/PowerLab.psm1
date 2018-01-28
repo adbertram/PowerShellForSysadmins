@@ -125,6 +125,12 @@ function Install-PowerLabOperatingSystem {
 		[string]$VhdPartitionStyle = 'GPT',
 
 		[Parameter()]
+		[string]$VhdBaseFolderPath = 'C:\PowerLab\VHDs',
+
+		[Parameter()]
+		[string]$IsoBaseFolderPath = 'C:\PowerLab\ISOs',
+
+		[Parameter()]
 		[string]$VhdPath
 	)
 	
@@ -135,18 +141,14 @@ function Install-PowerLabOperatingSystem {
 	. "$PSScriptRoot\Convert-WindowsImage.ps1"
 
 	## Here is where we could add mulitple OS support picking the right ISO depending on the OS version chosen
-	$baseIsoPath = 'C:\PowerLab\ISOs'
 	switch ($OperatingSystem) {
 		'Server 2016' {
-			$isoFilePath = "$baseIsoPath\en_windows_server_2016_x64_dvd_9718492.iso"
+			$isoFilePath = "$IsoBaseFolderPath\en_windows_server_2016_x64_dvd_9718492.iso"
 		}
 		default {
 			throw "Unrecognized input: [$_]"
 		}
 	}
-
-	## Assuming all VHDs live here and are called <VMName>.vhdx
-	$vhdBasePath = 'C:\PowerLab\VHDs'
 
 	$convertParams = @{
 		SourcePath        = $isoFilePath
@@ -160,7 +162,7 @@ function Install-PowerLabOperatingSystem {
 	if ($PSBoundParameters.ContainsKey('VhdPath')) {
 		$convertParams.VHDPath = $VhdPath
 	} else {
-		$convertParams.VHDPath = "$vhdBasePath\$VMName.vhdx"
+		$convertParams.VHDPath = "$VhdBaseFolderPath\$VMName.vhdx"
 	}
 
 	Convert-WindowsImage @convertParams
