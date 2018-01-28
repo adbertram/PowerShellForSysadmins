@@ -52,7 +52,7 @@ function New-PowerLabVhd {
 		[Parameter(Mandatory)]
 		[string]$Name,
 
-		[Parameter(Mandatory)]
+		[Parameter()]
 		[string]$AttachToVm,
 
 		[Parameter()]
