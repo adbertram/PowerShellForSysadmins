@@ -15,12 +15,12 @@ describe 'Automating Hyper-V Chapter Demo Work' {
 	}
 
 	context 'Virtual Hard Disk' {
-		it 'created a VHDX called LABDC at C:\PowerLab\VHDs' {
-			'C:\PowerLab\VHDs\LABDC.vhdx' | should exist
+		it 'created a VHDX called MYVM at C:\PowerLab\VHDs' {
+			'C:\PowerLab\VHDs\MYVM.vhdx' | should exist
 		}
 
-		it 'attached the LABDC VHDX to the LABDC VM' {
-			$createdVM | Get-VMHardDiskDrive | Where-Object { $_.Path -eq 'C:\PowerLab\VHDs\LABDC.vhdx' } | should not benullorEmpty
+		it 'attached the MYVM VHDX to the MYVM VM' {
+			$createdVM | Get-VMHardDiskDrive | Where-Object { $_.Path -eq 'C:\PowerLab\VHDs\MYVM.vhdx' } | should not benullorEmpty
 		}
 	}
 }
