@@ -21,7 +21,7 @@ describe 'LABDC VM' {
 describe 'LABDC Operating System' {
 
 	BeforeAll {
-		$cred = Import-Clixml -Path C:\PowerLab\VMCredential.xml
+		$cred = Import-Clixml -Path C:\PowerLab\DomainCredential.xml
 		$session = New-PSSession -VMName 'LABDC' -Credential $cred
 	}
 
