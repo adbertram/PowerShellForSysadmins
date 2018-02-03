@@ -1,12 +1,14 @@
-describe 'Automating Hyper-V Chapter Demo Work' {
-
-	$createdVM = Get-Vm -Name 'LABDC' -ErrorAction SilentlyContinue
-
+describe 'PowerLab setup' {
 	context 'Virtual Switch' {
 		it 'created a virtual switch called PowerLab' {
 			Get-VmSwitch -Name 'PowerLab' -ErrorAction SilentlyContinue | should not benullorEmpty
 		}
 	}
+}
+
+describe 'LABDC VM' {
+
+	$createdVM = Get-Vm -Name 'LABDC' -ErrorAction SilentlyContinue
 
 	context 'Virtual Machine' {
 		it 'created a virtual machine called LABDC' {

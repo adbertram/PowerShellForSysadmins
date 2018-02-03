@@ -2942,8 +2942,7 @@ namespace WIM2VHD {
 
 		##########################################################################################
 
-		Function 
-		Apply-BCDStoreChanges {
+		Function Apply-BCDStoreChanges {
 			[CmdletBinding()]
 			param(
 				[Parameter(Mandatory = $true)]
@@ -3036,8 +3035,7 @@ namespace WIM2VHD {
 
 		##########################################################################################
 
-		function 
-		Test-Admin {
+		function Test-Admin {
 			<#
                     .SYNOPSIS
                         Short function to determine whether the logged-on user is an administrator.
@@ -3061,8 +3059,7 @@ namespace WIM2VHD {
 
 		##########################################################################################
 
-		function
-		Test-WindowsVersion {
+		function Test-WindowsVersion {
               
 			# This breaks on Windows 10
 
@@ -3088,8 +3085,7 @@ namespace WIM2VHD {
 
 		##########################################################################################
 
-		function
-		Write-W2VInfo {
+		function Write-W2VInfo {
 			# Function to make the Write-Host output a bit prettier. 
 			[CmdletBinding()]
 			param(
@@ -3108,8 +3104,7 @@ namespace WIM2VHD {
 
 		##########################################################################################
 
-		function
-		Write-W2VTrace {
+		function Write-W2VTrace {
 			# Function to make the Write-Verbose output... well... exactly the same as it was before.
 			[CmdletBinding()]
 			param(
@@ -3123,8 +3118,7 @@ namespace WIM2VHD {
 
 		##########################################################################################
 
-		function
-		Write-W2VError {
+		function Write-W2VError {
 			# Function to make the Write-Host (NOT Write-Error) output prettier in the case of an error.
 			[CmdletBinding()]
 			param(
@@ -3138,8 +3132,7 @@ namespace WIM2VHD {
 
 		##########################################################################################
 
-		function
-		Write-W2VWarn {
+		function Write-W2VWarn {
 			# Function to make the Write-Host (NOT Write-Warning) output prettier.
 			[CmdletBinding()]
 			param(
@@ -3153,8 +3146,7 @@ namespace WIM2VHD {
 
 		##########################################################################################
 
-		function
-		Run-Executable {
+		function Run-Executable {
 			<#
                     .SYNOPSIS
                         Runs an external executable file, and validates the error level.
