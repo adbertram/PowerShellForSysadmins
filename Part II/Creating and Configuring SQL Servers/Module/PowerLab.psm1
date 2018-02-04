@@ -279,7 +279,7 @@ function New-PowerLabSqlServer {
 		[int]$Memory = 2GB,
 
 		[Parameter()]
-		[string]$Switch = 'PowerLab'
+		[string]$Switch = 'PowerLab',
 
 		[Parameter()]
 		[int]$Generation = 2,
