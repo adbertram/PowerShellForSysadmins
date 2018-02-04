@@ -266,49 +266,92 @@ function Test-PowerLabActiveDirectoryForest {
 }
 
 function New-PowerLabSqlServer {
-	[CmdletBinding(DefaultParameterSetName = 'Default')]
+	[CmdletBinding()]
 	param
 	(
 		[Parameter(Mandatory)]
-		[hashtable]$Name,
+		[string]$Name,
+
+		[Parameter()]
+		[string]$VMPath = 'C:\PowerLab\VMs'.
+
+		[Parameter()]
+		[int]$Memory = 2GB,
+
+		[Parameter()]
+		[string]$Switch = 'PowerLab'
+
+		[Parameter()]
+		[int]$Generation = 2,
+
+		[Parameter()]
+		[string]$DomainName = 'powerlab.local',
+
+		[Parameter(Mandatory)]
+		[pscredential]$DomainCredential,
+
+		[Parameter(Mandatory)]
+		[pscredential]$VMCredential,
 
 		[Parameter()]
 		[ValidateNotNullOrEmpty()]
-		[hashtable]$VMAttributes,
-
-		[Parameter(Mandatory, ParameterSetName = 'AddToDomain')]
-		[switch]$AddToDomain,
-
-		[Parameter(ParameterSetName = 'AddToDomain')]
-		[string]$DomainName = 'powerlab.local',
-
-		[Parameter(Mandatory, ParameterSetName = 'AddToDomain')]
-		[pscredential]$DomainCredential
+		[string]$AnswerFilePath = "C:\Program Files\WindowsPowerShell\Modules\PowerLab\SqlServer.ini"
 	)
 
 	## Build the VM
-	$vmParams = @{
-		Name = $Name
-	}
-	if ($PSBoundParameters.ContainsKey('VMAttributes')) {
-		$vmParams += $VMAttributes
+	$vmparams = @{ 
+		Name       = $Name
+		Path       = $VmPath
+		Memory     = $Memory
+		Switch     = $Switch
+		Generation = $Generation
 	}
 	New-PowerLabVm @vmParams
 
-	$vhdParams = @{
-		Name = $Name
-	}
-	Install-PowerLabSqlServer -ComputerName $Name
+	Install-PowerLabOperatingSystem -VmName $NewVMParameters.Name
+	Start-VM -Name SQLSRV
 
-	if ($AddToDomain.IsPresent) {
-		$addParams = @{
-			ComputerName = $Name
-			DomainName   = $DomainName
-			Credential   = $DomainCredential
-			Restart      = $true
-			Force        = $true
-		}
-		Add-Computer @addParams
+	Wait-Server -Name $Name -Status Online -Credential $VMCredential
+
+	$addParams = @{
+		DomainName = $DomainName
+		Credential = $DomainName
+		Restart    = $true
+		Force      = $true
+	}
+	Invoke-Command -VMName $Name -ScriptBlock { Add-Computer @using:addParams } -Credential $VMCredential
+
+	Wait-Server -Name $Name -Status Offline -Credential $VMCredential
+
+	Wait-Server -Name $Name -Status Online -Credential $DomainCredential
+
+	$tempFile = Copy-Item -Path $AnswerFilePath -Destination "C:\Program Files\WindowsPowerShell\Modules\PowerLab\temp.ini" -PassThru
+    
+	Install-PowerLabSqlServer -ComputerName $NewVMParameters.Name -AnswerFilePath $tempFile.FullName
+}
+
+function Wait-Server {
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory)]
+		[string]$Name,
+
+		[Parameter(Mandatory)]
+		[ValidateSet('Online','Offline')]
+		[string]$Status,
+
+		[Parameter(Mandatory)]
+		[pscredential]$Credential
+	)
+
+	if ($Status -eq 'Online') {
+		$scriptBlock = {Invoke-Command -VmName $Name -ScriptBlock { 1 } -Credential $Credential -ErrorAction Ignore}
+	} elseif ($Status -eq 'Offline') {
+		$scriptBlock = {(-not (Invoke-Command -VmName $Name -ScriptBlock { 1 } -Credential $Credential -ErrorAction Ignore))}
+	}
+	while (-not (& $scriptBlock)) {
+		Start-Sleep -Seconds 10
+		Write-Host 'Waiting for SQLSRV to come up...'
 	}
 }
 
@@ -320,6 +363,10 @@ function Install-PowerLabSqlServer {
 
 		[Parameter(Mandatory)]
 		[pscredential]$DomainCredential,
+
+		[Parameter(Mandatory)]
+		[ValidateNotNullOrEmpty()]
+		[string]$AnswerFilePath
 
 		[Parameter()]
 		[ValidateNotNullOrEmpty()]
@@ -336,49 +383,29 @@ function Install-PowerLabSqlServer {
 			Write-Verbose -Message 'SQL Server is already installed'
 		} else {
 
-			$sqlServerAnswerFilePath = "$PSScriptRoot\SqlServer.ini"
+			PrepareSqlServerInstallConfigFile -Path $AnswerFilePath
 
-			## Make a temporary copy of the template
-			Write-Verbose -Message 'Creating temporary SQL Server answer file...'
-			$tempFile = Copy-Item -Path $sqlServerAnswerFilePath -Destination "$PSScriptRoot\temp.ini" -PassThru -ToSession $session
-		
-			## Set all of your specific values in the temp answer file
-			$sqlServerAnswerFileContents = PrepareSqlServerInstallConfigFile -Path $tempFile.FullName
-			Set-Content -Path $tempFile.FullName -Value $sqlServerAnswerFileContents
-
-			## Copy the SQL server config ini to the VM
-			Write-Verbose -Message 'Copying SQL server answer file to VM...'
 			$copyParams = @{
-				Path        = $tempFile.FullName
+				Path        = $AnswerFilePath
 				Destination = 'C:\'
-				Session     = $session
-				PassThru    = $true
+				ToSession   = $session
 			}
-			$copiedConfigFile = Copy-Item @copyParams
-		
-			## Remove the temp file
-			Remove-Item -Path $tempFile.FullName -ErrorAction Ignore
-	
-			## Copy the ISO to the VM
-			Write-Verbose -Message 'Copying SQL server ISO to VM...'
-			$copiedIso = Copy-Item -Path $IsoFilePath -Destination 'C:\' -Force -ToSession $session -PassThru
-	
-			## Execute the installer
-			Write-Verbose -Message 'Running SQL Server installer...'
+			Copy-Item @copyParams
+			Copy-Item -Path $IsoFilePath -Destination 'C:\' -Force -ToSession $session
+
 			$icmParams = @{
 				Session      = $session
-				ArgumentList = $copiedConfigFile.FullName, $copiedIso.FullName
+				ArgumentList = $AnswerFilePath,$IsoFilePath
 				ScriptBlock  = {
 					$image = Mount-DiskImage -ImagePath $args[1] -PassThru
 					$installerPath = "$(($image | Get-Volume).DriveLetter):"
-					$null = & "$installerPath\setup.exe" "/CONFIGURATIONFILE=$($args[0])"
+					$null = & "$installerPath\setup.exe" "/CONFIGURATIONFILE=C:\$($args[0])"
 					$image | Dismount-DiskImage
 				}
 			}
 			Invoke-Command @icmParams
 
-			Write-Verbose -Message 'Cleaning up installer remnants...'
-			$scriptBlock = { Remove-Item -Path $copiedIso.FullName $using:copiedConfigFile.FullName -Recurse -ErrorAction Ignore }
+			$scriptBlock = { Remove-Item -Path $using:IsoFilePath, $using:AnswerFilePath -ErrorAction Ignore }
 			Invoke-Command -ScriptBlock $scriptBlock -Session $session
 		}
 		$session | Remove-PSSession
@@ -407,5 +434,6 @@ function PrepareSqlServerInstallConfigFile {
 	$configContents = Get-Content -Path $Path -Raw
 	$configContents = $configContents.Replace('SQLSVCACCOUNT=""', ('SQLSVCACCOUNT="{0}"' -f $ServiceAccountName))
 	$configContents = $configContents.Replace('SQLSVCPASSWORD=""', ('SQLSVCPASSWORD="{0}"' -f $ServiceAccountPassword))
-	$configContents.Replace('SQLSYSADMINACCOUNTS=""', ('SQLSYSADMINACCOUNTS="{0}"' -f $SysAdminAcountName))
+	$configContents = $configContents.Replace('SQLSYSADMINACCOUNTS=""', ('SQLSYSADMINACCOUNTS="{0}"' -f $SysAdminAcountName))
+	Set-Content -Path $Path -Value $configContents
 }
