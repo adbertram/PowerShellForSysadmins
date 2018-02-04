@@ -273,7 +273,7 @@ function New-PowerLabSqlServer {
 		[string]$Name,
 
 		[Parameter()]
-		[string]$VMPath = 'C:\PowerLab\VMs'.
+		[string]$VMPath = 'C:\PowerLab\VMs',
 
 		[Parameter()]
 		[int]$Memory = 2GB,
