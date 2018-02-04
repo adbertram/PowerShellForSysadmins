@@ -366,7 +366,7 @@ function Install-PowerLabSqlServer {
 
 		[Parameter(Mandatory)]
 		[ValidateNotNullOrEmpty()]
-		[string]$AnswerFilePath
+		[string]$AnswerFilePath,
 
 		[Parameter()]
 		[ValidateNotNullOrEmpty()]
