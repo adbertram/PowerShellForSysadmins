@@ -272,11 +272,17 @@ function New-PowerLabSqlServer {
 		[Parameter(Mandatory)]
 		[string]$Name,
 
+		[Parameter(Mandatory)]
+		[pscredential]$DomainCredential,
+
+		[Parameter(Mandatory)]
+		[pscredential]$VMCredential,
+
 		[Parameter()]
 		[string]$VMPath = 'C:\PowerLab\VMs',
 
 		[Parameter()]
-		[int]$Memory = 2GB,
+		[int64]$Memory = 2GB,
 
 		[Parameter()]
 		[string]$Switch = 'PowerLab',
@@ -286,12 +292,6 @@ function New-PowerLabSqlServer {
 
 		[Parameter()]
 		[string]$DomainName = 'powerlab.local',
-
-		[Parameter(Mandatory)]
-		[pscredential]$DomainCredential,
-
-		[Parameter(Mandatory)]
-		[pscredential]$VMCredential,
 
 		[Parameter()]
 		[ValidateNotNullOrEmpty()]
