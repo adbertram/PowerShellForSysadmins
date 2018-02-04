@@ -282,7 +282,7 @@ function New-PowerLabSqlServer {
 		[string]$VMPath = 'C:\PowerLab\VMs',
 
 		[Parameter()]
-		[int64]$Memory = 2GB,
+		[int64]$Memory = 4GB,
 
 		[Parameter()]
 		[string]$Switch = 'PowerLab',
@@ -327,7 +327,7 @@ function New-PowerLabSqlServer {
 
 	$tempFile = Copy-Item -Path $AnswerFilePath -Destination "C:\Program Files\WindowsPowerShell\Modules\PowerLab\temp.ini" -PassThru
     
-	Install-PowerLabSqlServer -ComputerName $Name -AnswerFilePath $tempFile.FullName
+	Install-PowerLabSqlServer -ComputerName $Name -AnswerFilePath $tempFile.FullName -DomainCredential $DomainCredential
 }
 
 function Wait-Server {
