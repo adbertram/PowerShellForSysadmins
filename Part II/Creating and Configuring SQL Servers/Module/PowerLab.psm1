@@ -308,14 +308,14 @@ function New-PowerLabSqlServer {
 	}
 	New-PowerLabVm @vmParams
 
-	Install-PowerLabOperatingSystem -VmName $NewVMParameters.Name
-	Start-VM -Name SQLSRV
+	Install-PowerLabOperatingSystem -VmName $Name
+	Start-VM -Name $Name
 
 	Wait-Server -Name $Name -Status Online -Credential $VMCredential
 
 	$addParams = @{
 		DomainName = $DomainName
-		Credential = $DomainName
+		Credential = $DomainCredential
 		Restart    = $true
 		Force      = $true
 	}
@@ -327,7 +327,7 @@ function New-PowerLabSqlServer {
 
 	$tempFile = Copy-Item -Path $AnswerFilePath -Destination "C:\Program Files\WindowsPowerShell\Modules\PowerLab\temp.ini" -PassThru
     
-	Install-PowerLabSqlServer -ComputerName $NewVMParameters.Name -AnswerFilePath $tempFile.FullName
+	Install-PowerLabSqlServer -ComputerName $Name -AnswerFilePath $tempFile.FullName
 }
 
 function Wait-Server {
