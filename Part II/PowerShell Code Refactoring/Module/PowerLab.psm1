@@ -372,7 +372,7 @@ function Wait-Server {
 	}
 	while (-not (& $scriptBlock)) {
 		Start-Sleep -Seconds 10
-		Write-Host 'Waiting for SQLSRV to come up...'
+		Write-Host "Waiting for [$Name] to come up..."
 	}
 }
 
