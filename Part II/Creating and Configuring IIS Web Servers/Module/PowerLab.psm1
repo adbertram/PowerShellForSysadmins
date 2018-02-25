@@ -334,7 +334,7 @@ function New-PowerLabServer {
 
 	switch ($ServerType) {
 		'Web' {
-			Write-Host 'Web server deployments are not supported at this time'
+			Install-PowerLabWebServer -ComputerName $Name -DomainCredential $DomainCredential
 			break
 		}
 		'SQL' {
@@ -457,4 +457,76 @@ function PrepareSqlServerInstallConfigFile {
 	$configContents = $configContents.Replace('SQLSVCPASSWORD=""', ('SQLSVCPASSWORD="{0}"' -f $ServiceAccountPassword))
 	$configContents = $configContents.Replace('SQLSYSADMINACCOUNTS=""', ('SQLSYSADMINACCOUNTS="{0}"' -f $SysAdminAcountName))
 	Set-Content -Path $Path -Value $configContents
+}
+
+function New-IISCertificate {
+	param(
+		[Parameter(Mandatory)]
+		[ValidateNotNullOrEmpty()]
+		[string]$WebServerName,
+
+		[Parameter(Mandatory)]
+		[ValidateNotNullOrEmpty()]
+		[string]$PrivateKeyPassword,
+
+		[Parameter()]
+		[ValidateNotNullOrEmpty()]
+		[string]$CertificateSubject = 'automateboringstuff',
+		
+		[Parameter()]
+		[ValidateNotNullOrEmpty()]
+		[string]$PublicKeyLocalPath = 'C:\PublicKey.cer',
+
+		[Parameter()]
+		[ValidateNotNullOrEmpty()]
+		[string]$PrivateKeyLocalPath = 'C:\PrivateKey.pfx',
+
+		[Parameter()]
+		[ValidateNotNullOrEmpty()]
+		[string]$CertificateStore = 'LocalMachine\My'
+	)
+
+	## Create the temporary self-signed cert
+	$null = New-SelfSignedCertificate -Subject $CertificateSubject
+
+	## Export the public key
+	$tempLocalCert = Get-ChildItem -Path "Cert:\$CertificateStore" | Where-Object {$_.Subject -match $CertificateSubject }
+	$null = $tempLocalCert | Export-Certificate -FilePath $PublicKeyLocalPath
+
+	## Find the thumbprint
+	$certPrint = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+	$certPrint.Import($PublicKeyLocalPath)
+	$certThumbprint = $certprint.Thumbprint
+
+	## Export the private key
+	$privKeyPw = ConvertTo-SecureString -String $PrivateKeyPassword -AsPlainText -Force
+	$null = $tempLocalCert | Export-PfxCertificate -FilePath $PrivateKeyLocalPath -Password $privKeyPw
+	
+	## Create a new PowerShell Direct session
+	$session = New-PSSession -VMName $WebServerName -Credential (Import-CliXml -Path C:\PowerLab\DomainCredential.xml)
+
+	## Import the WebAdministration module into the session
+	Invoke-Command -Session $session -ScriptBlock { Import-Module -Name WebAdministration }
+	
+	## Check to see if the certificate has already been imported
+	if (Invoke-Command -Session $session -ScriptBlock { $using:certThumbprint -in (Get-ChildItem -Path Cert:\LocalMachine\My).Thumbprint}) {
+		Write-Warning -Message 'The certificate has already been imported.'		
+	} else {
+		## Copy the private key to the web server
+		Copy-Item -Path $PrivateKeyLocalPath -Destination 'C:\' -ToSession $session
+
+		## Import the private key
+		Invoke-Command -Session $session -ScriptBlock { $null = Import-PfxCertificate -FilePath 'C:\PrivKey.pfx' -CertStoreLocation "Cert:\$using:CertificateStore" -Password $using:privKeyPw }
+
+		## Set the SSL binding
+		Invoke-Command -Session $session -ScriptBlock { Set-ItemProperty "IIS:\Sites\AutomateBoringStuff" -Name bindings -Value @{protocol='https'; bindingInformation='*:443:*'} }
+
+		## Force the SSL binding to use the private key
+		Invoke-Command -Session $session -ScriptBlock {
+			$cert = Get-ChildItem -Path "Cert:\$using:CertificateStore" | Where-Object { $_.Subject -match $using:CertificateSubject }
+			$null = Get-item -Path "Cert:\$using:CertificateStore\$($cert.Thumbprint)" | New-Item 'IIS:\SSLBindings\0.0.0.0!443' }
+	}
+
+	## Cleanup the remoting session
+	$session | Remove-PSSession
 }

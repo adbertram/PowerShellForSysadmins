@@ -1,26 +1,17 @@
 describe 'Creating and Configuring IIS Web Servers Prerequisites' {
 
-	$vmName = 'LABDC'
+	$vmName = 'WEBSRV'
 
-	it 'has a VM called LABDC setup' {
+	it 'has a VM called WEBSRV setup' {
 		Get-Vm -Name $vmName | should not benullorEmpty
 	}
 
-	it 'LABDC must be running' {
+	it 'WEBSRV must be running' {
 		(Get-VM -Name $vmName).State | should be 'Running'
 	}
 
 	it 'must have a domain credential stored locally' {
 		'C:\PowerLab\DomainCredential.xml' | should exist
-	}
-
-	it 'LABDC must be a domain controller' {
-		$icmParams = @{
-			VMName      = $vmName
-			Credential  = (Import-CliXml -path C:\PowerLab\DomainCredential.xml)
-			ScriptBlock = { (Get-AddomainController).Name }
-		}
-		Invoke-Command @icmParams | should be $vmName
 	}
 
 	it 'the PowerLab module must be installed' {

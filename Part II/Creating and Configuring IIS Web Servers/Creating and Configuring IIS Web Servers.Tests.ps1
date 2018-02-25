@@ -192,6 +192,15 @@ describe 'WEBSRV' {
 
 	context 'IIS configuration' {
 
-		
+		it 'a website called AutomateBoringStuff exists' {
+			Invoke-Command -Session $session -ScriptBlock { Get-WebSite -Name AutomateBoringStuff } | should not benullorempty
+		}
+
+		it 'the AutomateBoringStuff website has an SSL binding setup' {
+			$bindings = Invoke-Command -Session $session -ScriptBlock { (Get-Website -Name AutomateBoringStuff).bindings.Collection }
+			$bindings.protocol | should be 'https'
+			$bindings.bindingInformation | should be '*:443:*'
+			
+		}
 	}
 }
