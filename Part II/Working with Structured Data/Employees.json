@@ -1,0 +1,16 @@
+{
+	"Employees": [
+		{
+			"FirstName": "Adam",
+			"LastName": "Bertram",
+			"Department": "IT",
+			"Title": "Awesome IT Professional"
+		},
+		{
+			"FirstName": "Bob",
+			"LastName": "Smith",
+			"Department": "HR",
+			"Title": "Crotchety HR guy"
+		}
+	]
+}
