@@ -16,20 +16,17 @@ $sp = New-AzureRmADServicePrincipal -ApplicationId $myApp.ApplicationId
 New-AzureRmRoleAssignment -RoleDefinitionName Contributor -ServicePrincipalName $sp.ServicePrincipalNames[0]
 
 ## Save the encrypted application password to disk
-$secPassword | ConvertFrom-SecureString | Out-File -FilePath C:\AzureAppPassword.txt
+$azureAppIdPasswordFilePath = 'C:\AzureAppPassword.txt'
+$secPassword | ConvertFrom-SecureString | Out-File -FilePath $azureAppIdPasswordFilePath
 
 #endregion
 
 #region This goes in any script thereafter you need to authenticate to Azure into
 
 ## Create a PSCredential object from the application ID and password
-$azureAppId = '<application id>'
-$azureAppIdPasswordFilePath = 'C:\AzureAppPassword.txt'
-$azureAppCred = (New-Object System.Management.Automation.PSCredential $azureAppId, (Get-Content -Path $azureAppIdPasswordFilePath | ConvertTo-SecureString))
+$azureAppCred = (New-Object System.Management.Automation.PSCredential $myApp.ApplicationId, (Get-Content -Path $azureAppIdPasswordFilePath | ConvertTo-SecureString))
 
 ## Use the subscription ID, tenant ID and password to authenticate
-$subscriptionId = '<subscription id>'
-$tenantId = '<tenant id>'
-Add-AzureRmAccount -ServicePrincipal -SubscriptionId $subscriptionId -TenantId $tenantId -Credential $azureAppCred
-
+$subscription = Get-AzureRmSubscription -SubscriptName '<your subscription name>'
+Add-AzureRmAccount -ServicePrincipal -SubscriptionId $subscription.Id -TenantId $subscription.TenantId -Credential $azureAppCred
 #endregion

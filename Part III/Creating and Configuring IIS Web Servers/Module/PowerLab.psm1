@@ -266,7 +266,7 @@ function Test-PowerLabActiveDirectoryForest {
 }
 
 function New-PowerLabServer {
-	[CmdletBinding(DefaultParameterSetName = 'blah blah')]
+	[CmdletBinding(DefaultParameterSetName = 'Generic')]
 	param
 	(
 		[Parameter(Mandatory)]
@@ -293,8 +293,8 @@ function New-PowerLabServer {
 		[Parameter()]
 		[string]$DomainName = 'powerlab.local',
 
-		[Parameter(Mandatory)]
-		[ValidateSet('SQL', 'Web', 'Generic')]
+		[Parameter()]
+		[ValidateSet('SQL', 'Web')]
 		[string]$ServerType,
 
 		[Parameter(ParameterSetName = 'SQL')]
@@ -332,21 +332,23 @@ function New-PowerLabServer {
 
 	Wait-Server -Name $Name -Status Online -Credential $DomainCredential
 
-	switch ($ServerType) {
-		'Web' {
-			Install-PowerLabWebServer -ComputerName $Name -DomainCredential $DomainCredential
-			break
-		}
-		'SQL' {
-			$tempFile = Copy-Item -Path $AnswerFilePath -Destination "C:\Program Files\WindowsPowerShell\Modules\PowerLab\temp.ini" -PassThru
-			Install-PowerLabSqlServer -ComputerName $Name -AnswerFilePath $tempFile.FullName -DomainCredential $DomainCredential
-			break
-		}
-		'Generic' {
-			break
-		}
-		default {
-			throw "Unrecognized server type: [$_]"
+	if ($PSBoundParameters.ContainsKey('ServerType')) {
+		switch ($ServerType) {
+			'Web' {
+				Install-PowerLabWebServer -ComputerName $Name -DomainCredential $DomainCredential
+				break
+			}
+			'SQL' {
+				$tempFile = Copy-Item -Path $AnswerFilePath -Destination "C:\Program Files\WindowsPowerShell\Modules\PowerLab\temp.ini" -PassThru
+				Install-PowerLabSqlServer -ComputerName $Name -AnswerFilePath $tempFile.FullName -DomainCredential $DomainCredential
+				break
+			}
+			'Generic' {
+				break
+			}
+			default {
+				throw "Unrecognized server type: [$_]"
+			}
 		}
 	}
 }
