@@ -8,6 +8,6 @@ $azureAppCred = (New-Object System.Management.Automation.PSCredential $azureAppI
 ## Use the subscription ID, tenant ID and password to authenticate
 $subscriptionId = '<subscription id>'
 $tenantId = '<tenant id>'
-Add-AzureRmAccount -ServicePrincipal -SubscriptionId $subscriptionId -TenantId $tenantId -Credential $azureAppCred
+Add-AzAccount -ServicePrincipal -SubscriptionId $subscriptionId -TenantId $tenantId -Credential $azureAppCred
 
 #endregion

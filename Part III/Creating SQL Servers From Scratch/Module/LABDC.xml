@@ -65,7 +65,7 @@
 			<UserData>
 				<AcceptEula>true</AcceptEula>
 				<FullName></FullName>
-				<Organization>Automate the Boring Stuff with PowerShell</Organization>
+				<Organization>PowerShell For SysSdmins</Organization>
 			</UserData>
 			<EnableFirewall>false</EnableFirewall>
 		</component>
@@ -206,7 +206,7 @@
 					</LocalAccount>
 				</LocalAccounts>
 			</UserAccounts>
-			<RegisteredOrganization>Automate the Boring Stuff with PowerShell</RegisteredOrganization>
+			<RegisteredOrganization>PowerShell For SysSdmins</RegisteredOrganization>
 			<RegisteredOwner></RegisteredOwner>
 			<DisableAutoDaylightTimeSet>false</DisableAutoDaylightTimeSet>
 			<TimeZone>Central Standard Time</TimeZone>

@@ -77,7 +77,7 @@ describe 'Active Directory Forest' {
 		$domainCred = Import-Clixml -Path C:\PowerLab\DomainCredential.xml
 		$session = New-PSSession -VMName 'LABDC' -Credential $domainCred
 
-		$adobjectSpreadsheetPath = 'C:\Automate-The-Boring-Stuff-With-PowerShell\Part II\Creating an Active Directory Forest\ActiveDirectoryObjects.xlsx'
+		$adobjectSpreadsheetPath = 'C:\PowerShellForSysAdmins\Part II\Creating an Active Directory Forest\ActiveDirectoryObjects.xlsx'
 		$expectedUsers = Import-Excel -Path $adobjectSpreadsheetPath -WorksheetName Users
 		$expectedGroups = Import-Excel -Path $adobjectSpreadsheetPath -WorksheetName Groups
 	}
@@ -192,12 +192,12 @@ describe 'WEBSRV' {
 
 	context 'IIS configuration' {
 
-		it 'a website called AutomateBoringStuff exists' {
-			Invoke-Command -Session $session -ScriptBlock { Get-WebSite -Name AutomateBoringStuff } | should not benullorempty
+		it 'a website called PowerShellForSysAdmns exists' {
+			Invoke-Command -Session $session -ScriptBlock { Get-WebSite -Name PowerShellForSysAdmns } | should not benullorempty
 		}
 
-		it 'the AutomateBoringStuff website has an SSL binding setup' {
-			$bindings = Invoke-Command -Session $session -ScriptBlock { (Get-Website -Name AutomateBoringStuff).bindings.Collection }
+		it 'the PowerShellForSysAdmns website has an SSL binding setup' {
+			$bindings = Invoke-Command -Session $session -ScriptBlock { (Get-Website -Name PowerShellForSysAdmns).bindings.Collection }
 			$bindings.protocol | should be 'https'
 			$bindings.bindingInformation | should be '*:443:*'
 			

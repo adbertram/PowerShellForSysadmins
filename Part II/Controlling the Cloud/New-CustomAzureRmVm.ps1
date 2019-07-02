@@ -1,4 +1,4 @@
-function New-CustomAzureRmVM {
+function New-CustomAzVM {
     [CmdletBinding()]
     param
     (
@@ -25,7 +25,7 @@ function New-CustomAzureRmVM {
         [string]$PublicIpAddressName,
 
         [Parameter(Mandatory)]
-        [ValidateSet('Static','Dynamic')]
+        [ValidateSet('Static', 'Dynamic')]
         [string]$PublicIpAddressAllocationMethod,
 
         [Parameter(Mandatory)]
@@ -45,7 +45,7 @@ function New-CustomAzureRmVM {
         [string]$VirtualNetworkAddressPrefix = '10.0.0.0/16',
 
         [Parameter()]
-        [string]$StorageAccountName = 'automateboringstorage',
+        [string]$StorageAccountName = 'powershellsysadmins',
 
         [Parameter()]
         [string]$StorageAccountType = 'Standard_LRS',
@@ -54,71 +54,71 @@ function New-CustomAzureRmVM {
         [string]$OsDiskName = 'OSDisk'
     )
 
-    if (Get-AzureRmVm -Name $VmName -ResourceGroupName $ResourceGroupName -ErrorAction Ignore) {
+    if (Get-AzVm -Name $VmName -ResourceGroupName $ResourceGroupName -ErrorAction Ignore) {
         Write-Verbose -Message "The Azure virtual machine [$($VmName)] already exists."
     } else {
-        if (-not (Get-AzureRmResourceGroup -Name $ResourceGroupName -Location $Location -ErrorAction Ignore)) {
+        if (-not (Get-AzResourceGroup -Name $ResourceGroupName -Location $Location -ErrorAction Ignore)) {
             Write-Verbose -Message "Creating an Azure resource group with the name [$($ResourceGroupName)]..."
-            $null = New-AzureRmResourceGroup -Name $ResourceGroupName -Location $Location
+            $null = New-AzResourceGroup -Name $ResourceGroupName -Location $Location
         } else {
             Write-Verbose -Message "Azure resource group with the name [$($ResourceGroupName)] already exists."
         }
 
-        if (-not ($vNet = Get-AzureRmVirtualNetwork -Name $VirtualNetworkName -ResourceGroupName $ResourceGroupName -ErrorAction Ignore)) {
+        if (-not ($vNet = Get-AzVirtualNetwork -Name $VirtualNetworkName -ResourceGroupName $ResourceGroupName -ErrorAction Ignore)) {
             $newSubnetParams = @{
-                'Name' = $SubnetName
+                'Name'          = $SubnetName
                 'AddressPrefix' = $SubnetAddressPrefix
             }
-            $subnet = New-AzureRmVirtualNetworkSubnetConfig @newSubnetParams
+            $subnet = New-AzVirtualNetworkSubnetConfig @newSubnetParams
 
             $newVNetParams = @{
-                'Name' = $VirtualNetworkName
+                'Name'              = $VirtualNetworkName
                 'ResourceGroupName' = $ResourceGroupName
-                'Location' = $Location
-                'AddressPrefix' = $VirtualNetworkAddressPrefix
+                'Location'          = $Location
+                'AddressPrefix'     = $VirtualNetworkAddressPrefix
             }
             Write-Verbose -Message "Creating virtual network name [$($VirtualNetworkName)]..."
-            $vNet = New-AzureRmVirtualNetwork @newVNetParams -Subnet $subnet
+            $vNet = New-AzVirtualNetwork @newVNetParams -Subnet $subnet
         } else {
             Write-Verbose -Message "The virtual network [$($VirtualNetworkName)] already exists."
         }
 
-        if (-not ($publicIp = Get-AzureRmPublicIpAddress -Name $PublicIpAddressName -ResourceGroupName $ResourceGroupName -ErrorAction Ignore)) {
+        if (-not ($publicIp = Get-AzPublicIpAddress -Name $PublicIpAddressName -ResourceGroupName $ResourceGroupName -ErrorAction Ignore)) {
             $newPublicIpParams = @{
-                'Name' = $PublicIpAddressName
+                'Name'              = $PublicIpAddressName
                 'ResourceGroupName' = $ResourceGroupName
-                'AllocationMethod' = $PublicIpAddressAllocationMethod
-                'Location' = $Location
+                'AllocationMethod'  = $PublicIpAddressAllocationMethod
+                'Location'          = $Location
             }
             Write-Verbose -Message "Creating the public IP address [$($PublicIpAddressName)].."
-            $publicIp = New-AzureRmPublicIpAddress @newPublicIpParams
+            $publicIp = New-AzPublicIpAddress @newPublicIpParams
         } else {
             Write-Verbose -Message "The public IP address [$($PublicIpAddressName)] already exists."
         }
 
-        if (-not ($vNic = Get-AzureRmNetworkInterface -Name $VirtualNicName -ResourceGroupName $ResourceGroupName -ErrorAction Ignore)) {
+        if (-not ($vNic = Get-AzNetworkInterface -Name $VirtualNicName -ResourceGroupName $ResourceGroupName -ErrorAction Ignore)) {
             $newVNicParams = @{
-                'Name' = $VirtualNicName
+                'Name'              = $VirtualNicName
                 'ResourceGroupName' = $ResourceGroupName
-                'Location' = $Location
-                'SubnetId' = $vNet.Subnets[0].Id
+                'Location'          = $Location
+                'SubnetId'          = $vNet.Subnets[0].Id
                 'PublicIpAddressId' = $publicIp.Id
             }
             Write-Verbose -Message "Creating the virtual NIC [$($VirtualNicName)]..."
-            $vNic = New-AzureRmNetworkInterface @newVNicParams
+            $vNic = New-AzNetworkInterface @newVNicParams
         } else {
             Write-Verbose -Message "The virtual NIC [$($VirtualNicName)] already exists."
         }
 
-        if (-not ($storageAccount = (Get-AzureRmStorageAccount).where({$_.StorageAccountName -eq $StorageAccountName}))) {
+        if (-not ($storageAccount = (Get-AzStorageAccount).where({ $_.StorageAccountName -eq $StorageAccountName }))) {
             $newStorageAcctParams = @{
-                'Name' = $StorageAccountName
+                'Name'              = $StorageAccountName
                 'ResourceGroupName' = $ResourceGroupName
-                'Type' = $StorageAccountType
-                'Location' = $Location
+                'Type'              = $StorageAccountType
+                'Location'          = $Location
             }
             Write-Verbose -Message "Creating the storage account [$($StorageAccountName)]..."
-            $storageAccount = New-AzureRmStorageAccount @newStorageAcctParams
+            $storageAccount = New-AzStorageAccount @newStorageAcctParams
         } else {
             Write-Verbose -Message "The storage account [$($StorageAccountName)] already exists."
         }
@@ -127,35 +127,35 @@ function New-CustomAzureRmVM {
             'VMName' = $VmName
             'VMSize' = $VmSize
         }
-        $vmConfig = New-AzureRmVMConfig @newConfigParams
+        $vmConfig = New-AzVMConfig @newConfigParams
 
         $newVmOsParams = @{
-            'Windows' = $true
-            'ComputerName' = $HostName
-            'Credential' = $AdminCredential
+            'Windows'          = $true
+            'ComputerName'     = $HostName
+            'Credential'       = $AdminCredential
             'EnableAutoUpdate' = $true
-            'VM' = $vmConfig
+            'VM'               = $vmConfig
         }
-        $vm = Set-AzureRmVMOperatingSystem @newVmOsParams
+        $vm = Set-AzVMOperatingSystem @newVmOsParams
 
-        $offer = Get-AzureRmVMImageOffer -Location $Location –PublisherName 'MicrosoftWindowsServer' | Where-Object { $_.Offer -eq 'WindowsServer' }
+        $offer = Get-AzVMImageOffer -Location $Location –PublisherName 'MicrosoftWindowsServer' | Where-Object { $_.Offer -eq 'WindowsServer' }
         $newSourceImageParams = @{
             'PublisherName' = 'MicrosoftWindowsServer'
-            'Version' = 'latest'
-            'Skus' = '2012-R2-Datacenter'
-            'VM' = $vm
-            'Offer' = $offer.Offer
+            'Version'       = 'latest'
+            'Skus'          = '2012-R2-Datacenter'
+            'VM'            = $vm
+            'Offer'         = $offer.Offer
         }
-        $vm = Set-AzureRmVMSourceImage @newSourceImageParams
+        $vm = Set-AzVMSourceImage @newSourceImageParams
 
         $osDiskUri = '{0}vhds/{1}{2}.vhd' -f $storageAccount.PrimaryEndpoints.Blob.ToString(), $VmName, $OsDiskName
         Write-Verbose -Message "Creating OS disk [$($OSDiskName)]..."
-        $vm = Set-AzureRmVMOSDisk -Name $OSDiskName -CreateOption 'fromImage' -VM $vm -VhdUri $osDiskUri
+        $vm = Set-AzVMOSDisk -Name $OSDiskName -CreateOption 'fromImage' -VM $vm -VhdUri $osDiskUri
 
         Write-Verbose -Message 'Adding vNic to VM...'
-        $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $vNic.Id
+        $vm = Add-AzVMNetworkInterface -VM $vm -Id $vNic.Id
 
         Write-Verbose -Message "Creating virtual machine [$($VMName)]..."
-        New-AzureRmVM -VM $vm -ResourceGroupName $ResourceGroupName -Location $Location
+        New-AzVM -VM $vm -ResourceGroupName $ResourceGroupName -Location $Location
     }
 }
