@@ -20,6 +20,6 @@ foreach ($server in $servers) {
     $output.'Memory (GB)' = (Get-CimInstance @getCimInstParams -ClassName Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum /1GB
     $output.'IPAddress' = (Get-CimInstance @getCimInstParams -ClassName Win32_NetworkAdapterConfiguration -Filter "IPEnabled = 'True'").IPAddress[0]
     $output.StoppedServices = (Get-Service -ComputerName $server | Where-Object { $_.Status -eq 'Stopped' }).DisplayName
-    Remove-CimSession -CimSession $cimSession
+    Remove-CimSession -CimSession $getCimInstParams.CimSession
     [pscustomobject]$output
 }
