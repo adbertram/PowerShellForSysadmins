@@ -138,7 +138,7 @@ function New-CustomAzVM {
         }
         $vm = Set-AzVMOperatingSystem @newVmOsParams
 
-        $offer = Get-AzVMImageOffer -Location $Location –PublisherName 'MicrosoftWindowsServer' | Where-Object { $_.Offer -eq 'WindowsServer' }
+        $offer = Get-AzVMImageOffer -Location $Location -PublisherName 'MicrosoftWindowsServer' | Where-Object { $_.Offer -eq 'WindowsServer' }
         $newSourceImageParams = @{
             'PublisherName' = 'MicrosoftWindowsServer'
             'Version'       = 'latest'
