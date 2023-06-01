@@ -1,5 +1,5 @@
-"fname","lname","dept"
-"Adam","Bertram","IT"
-"Barack","Obama","Executive Office"
+"First Name","Last Name","Department", "Manager"
+"Adam","Bertram","IT", "Miranda Bertram"
+"Barack","Obama","Executive Office", "Michelle Obama"
 "Miranda","Bertram","Executive Office"
 "Michelle","Obama","Executive Office"
